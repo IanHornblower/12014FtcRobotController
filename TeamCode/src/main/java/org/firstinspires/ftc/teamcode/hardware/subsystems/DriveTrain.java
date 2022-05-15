@@ -37,7 +37,7 @@ public class DriveTrain implements Subsystem {
     public DriveTrain(HardwareMap hwMap) {
         this.hwMap = hwMap;
 
-        frontLeft = hwMap.get(DcMotorEx.class, "fl");
+        frontLeft = hwMap.get(DcMotorEx.class, "lr"); // should be fl
         frontRight = hwMap.get(DcMotorEx.class, "fr");
         backLeft = hwMap.get(DcMotorEx.class, "bl");
         backRight = hwMap.get(DcMotorEx.class, "br");

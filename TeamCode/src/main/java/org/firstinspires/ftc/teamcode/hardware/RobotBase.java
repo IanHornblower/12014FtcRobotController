@@ -13,6 +13,7 @@ public class RobotBase extends OpMode implements Robot {
 
     public DriveTrain driveTrain;
     public Duck duck;
+    public Arm arm;
 
     Subsystem[] subsystems = {};
 
@@ -22,8 +23,9 @@ public class RobotBase extends OpMode implements Robot {
     public RobotBase (HardwareMap hwMap, Gamepad gamepad1, Gamepad gamepad2) {
         driveTrain = new DriveTrain(hwMap);
         duck = new Duck(hwMap);
+        arm = new Arm(hwMap);
 
-        subsystems = new Subsystem[] {driveTrain, duck};
+        subsystems = new Subsystem[] {driveTrain, duck, arm};
 
         driverGamepad = new GamepadEx(gamepad1);
         operatorGamepad = new GamepadEx(gamepad2);
