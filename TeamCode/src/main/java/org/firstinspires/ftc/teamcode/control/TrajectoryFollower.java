@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.control;
 
+import com.ThermalEquilibrium.homeostasis.Parameters.PIDCoefficients;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import org.firstinspires.ftc.teamcode.hardware.DriveConstants;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.math.Curve;
 import org.firstinspires.ftc.teamcode.math.Point;
@@ -8,6 +10,8 @@ import org.firstinspires.ftc.teamcode.math.Pose2D;
 import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.util.ArrayList;
+
+// TODO: new system in place for ASYNC travel this will be removed and replaced with individual actions
 
 public class TrajectoryFollower extends LinearOpMode {
 
@@ -30,6 +34,9 @@ public class TrajectoryFollower extends LinearOpMode {
     boolean reversed = false;
     int closestPointIndex = 0;
     double runningCount = 1e+6;
+
+    double[] segmentLength;
+    int index = 0;
 
     public enum STATE {START, RUNNING, COMPLETED, STOPPED}
     STATE state;
@@ -83,6 +90,7 @@ public class TrajectoryFollower extends LinearOpMode {
                 lastIndex = path.size()-1;
                 lastPoint = path.get(lastIndex);
                 state = STATE.RUNNING;
+                timer.start();
                 break;
             case RUNNING:
                 pointToFollow = PurePursuit.getLookAheadPoint(extendedPath, dt, radius);
@@ -92,7 +100,7 @@ public class TrajectoryFollower extends LinearOpMode {
                 double error = Math.abs(dt.localizer.getPose().getDistanceFrom(lastPoint)) - radius;
 
                 // TODO: Change to after point change, current system does it half way (closest System)
-
+                timer.reset();
                 for(int i = 0; i < path.size(); i++) {
                     double distanceTo = dt.localizer.getPose().getDistanceFrom(path.get(i));
 
@@ -101,6 +109,7 @@ public class TrajectoryFollower extends LinearOpMode {
                         runningCount = distanceTo;
                     }
                 }
+                //System.out.println(timer.currentSeconds());
 
                 runningCount = 1e+6;
 
@@ -187,22 +196,76 @@ public class TrajectoryFollower extends LinearOpMode {
 
     }
 
-    public void actualHolonomicFollower(double heading) throws InterruptedException {
-        double radius = 1;
+    public void actualHolonomicFollower(double radius) throws InterruptedException {
         switch (state) {
             case START:
                 currentTrajectory.setStart();
                 path = currentTrajectory.getPath();
                 extendedPath = PurePursuit.extendPath(path, radius);
 
+                segmentLength = new double[path.size()-1];
+
+                for(int i = 0; i < path.size()-1; i++) {
+                    segmentLength[i] = path.get(i).getDistanceFrom(path.get(i+1));
+                }
+
                 lastIndex = path.size()-1;
                 lastPoint = path.get(lastIndex);
                 state = STATE.RUNNING;
+                timer.start();
                 break;
             case RUNNING:
                 pointToFollow = PurePursuit.getLookAheadPoint(extendedPath, dt, radius);
 
-                dt.runToPosition(pointToFollow.x, pointToFollow.y, heading);
+                dt.runToPosition(pointToFollow.x, pointToFollow.y, path.get(index).heading);
+
+                double error = Math.abs(dt.localizer.getPose().getDistanceFrom(lastPoint)) - radius;
+
+                if(dt.localizer.accumulatedDistance > segmentLength[index]) {
+                    dt.localizer.resetAccumulatedDistance();
+                    index++;
+                }
+
+                // Trajectory is Finished if the timeout has been reached, or we are within our distance tolerance
+                if((timer.currentSeconds() > timeout) || (error < distanceTolerance)) state = STATE.COMPLETED;
+                break;
+            case COMPLETED:
+                currentTrajectory.complete();
+                isCompleted = true;
+                state = STATE.STOPPED;
+                break;
+            case STOPPED:
+                dt.stopDriveTrain();
+                break;
+        }
+
+    }
+
+    public void tightHolonomicFollower(double radius) throws InterruptedException {
+        switch (state) {
+            case START:
+                currentTrajectory.setStart();
+                path = currentTrajectory.getPath();
+                extendedPath = PurePursuit.extendPath(path, radius);
+
+                segmentLength = new double[path.size()-1];
+
+                for(int i = 0; i < path.size()-1; i++) {
+                    segmentLength[i] = path.get(i).getDistanceFrom(path.get(i+1));
+                }
+
+                lastIndex = path.size()-1;
+                lastPoint = path.get(lastIndex);
+                state = STATE.RUNNING;
+                timer.start();
+                break;
+            case RUNNING:
+                if(dt.localizer.accumulatedDistance > segmentLength[index]) {
+                    dt.localizer.resetAccumulatedDistance();
+                    index++;
+                }
+
+                dt.runToPosition(path.get(index+1).x, path.get(index+1).y, path.get(index+1).heading);
 
                 double error = Math.abs(dt.localizer.getPose().getDistanceFrom(lastPoint)) - radius;
 

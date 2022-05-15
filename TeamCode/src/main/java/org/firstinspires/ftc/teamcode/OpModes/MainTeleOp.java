@@ -18,7 +18,7 @@ public class MainTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        RobotBase actualRobot = new RobotBase(hardwareMap);
+        RobotBase actualRobot = new RobotBase(hardwareMap, gamepad1, gamepad2);
 
         actualRobot.initHardwareMap();
         actualRobot.driveTrain.setStartPosition(new Pose2D(0, 0, Math.toRadians(0)));

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.gamepad.GamepadEx;
 import org.firstinspires.ftc.teamcode.gamepad.Joystick;
@@ -18,7 +19,7 @@ public class RobotBase extends OpMode implements Robot {
     public GamepadEx driverGamepad;
     public GamepadEx operatorGamepad;
 
-    public RobotBase (HardwareMap hwMap) {
+    public RobotBase (HardwareMap hwMap, Gamepad gamepad1, Gamepad gamepad2) {
         driveTrain = new DriveTrain(hwMap);
         duck = new Duck(hwMap);
 
@@ -26,11 +27,6 @@ public class RobotBase extends OpMode implements Robot {
 
         driverGamepad = new GamepadEx(gamepad1);
         operatorGamepad = new GamepadEx(gamepad2);
-
-        driverGamepad.leftJoystick.invert(Joystick.AXIS.y);
-        driverGamepad.rightJoystick.invert(Joystick.AXIS.y);
-        operatorGamepad.leftJoystick.invert(Joystick.AXIS.y);
-        operatorGamepad.rightJoystick.invert(Joystick.AXIS.y);
     }
 
     @Override

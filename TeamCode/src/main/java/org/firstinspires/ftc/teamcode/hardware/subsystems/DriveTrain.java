@@ -30,17 +30,17 @@ public class DriveTrain implements Subsystem {
     public GyroIntegratedThreeWheelOdometry localizer;
 
     // When odometers are in change to Odometric Profile
-    MotionProfile motionProfile = new EncoderMotionProfile(
+    MotionProfile motionProfile = new OdometricMotionProfile(
             xPID, yPID, headingPID, forwardPID, turnPID
     );
 
     public DriveTrain(HardwareMap hwMap) {
         this.hwMap = hwMap;
 
-        frontLeft = hwMap.get(DcMotorEx.class, "leftFront");
-        frontRight = hwMap.get(DcMotorEx.class, "rightFront");
-        backLeft = hwMap.get(DcMotorEx.class, "leftBack");
-        backRight = hwMap.get(DcMotorEx.class, "rightBack");
+        frontLeft = hwMap.get(DcMotorEx.class, "fl");
+        frontRight = hwMap.get(DcMotorEx.class, "fr");
+        backLeft = hwMap.get(DcMotorEx.class, "bl");
+        backRight = hwMap.get(DcMotorEx.class, "br");
 
         motors = new DcMotorEx[] {frontLeft, frontRight, backLeft, backRight};
 

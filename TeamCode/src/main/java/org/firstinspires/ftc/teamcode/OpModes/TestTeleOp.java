@@ -28,7 +28,7 @@ public class TestTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        RobotBase actualRobot = new RobotBase(hardwareMap);
+        RobotBase actualRobot = new RobotBase(hardwareMap,gamepad1, gamepad2);
         TrajectoryFollower f = new TrajectoryFollower(actualRobot.driveTrain, 4.5, 0.5);
 
         actualRobot.initHardwareMap();
