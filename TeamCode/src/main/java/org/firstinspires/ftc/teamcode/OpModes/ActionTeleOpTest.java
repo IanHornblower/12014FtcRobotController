@@ -27,10 +27,9 @@ public class ActionTeleOpTest extends LinearOpMode {
         actualRobot.driveTrain.setStartPosition(new Pose2D(0, 0, Math.toRadians(0)));
 
         ActionSequence as = new ActionSequence();
-        as.addAction(new ForwardBackwardControl(actualRobot.driveTrain, 5000));
+        as.addAction(new IMURotate(actualRobot.driveTrain, Math.toRadians(90)));
         as.addAction(new Wait(1));
-        as.addAction(new ForwardBackwardControl(actualRobot.driveTrain, -5000));
-
+        as.addAction(new IMURotate(actualRobot.driveTrain, Math.toRadians(0)));
         /*
          *  as.addAction(new EncoderDrive(actualRobot.driveTrain, 0.5, 0.5, 0, 5000));
          *  as.addAction(new Wait(.5));
