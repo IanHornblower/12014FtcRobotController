@@ -40,7 +40,7 @@ public class MainTeleOp extends LinearOpMode {
 
             //actualRobot.driveTrain.setMotorPowers(x, y, turn);
 
-            //actualRobot.driveTrain.setWeightedDrivePower(x, y, turn);
+            actualRobot.driveTrain.setWeightedDrivePower(x, y, turn);
 
             /**
              *  FIELD CENTRIC SETTINGS
@@ -48,7 +48,7 @@ public class MainTeleOp extends LinearOpMode {
 
             //actualRobot.driveTrain.driveFieldCentric(x, y, turn);
 
-            actualRobot.driveTrain.setFieldCentricDrivePower(x, y, turn);
+            //actualRobot.driveTrain.setFieldCentricDrivePower(x, y, turn);
 
 
 

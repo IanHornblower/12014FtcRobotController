@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.ThermalEquilibrium.homeostasis.Parameters.PIDCoefficients;
+import com.acmerobotics.dashboard.config.Config;
 
+@Config
 public class DriveConstants {
 
     public static int EncoderTicks = 1120;
@@ -12,7 +14,7 @@ public class DriveConstants {
 
     public static PIDCoefficients xPID = new PIDCoefficients(0.1, 0 ,0);
     public static PIDCoefficients yPID = new PIDCoefficients(0.1, 0 ,0);
-    public static PIDCoefficients headingPID = new PIDCoefficients(0.3, 0 ,0);
+    public static PIDCoefficients headingPID = new PIDCoefficients(0.1, 0 ,0);
 
     public static PIDCoefficients encoderHeadingPID = new PIDCoefficients(2, 0 ,0);
 
