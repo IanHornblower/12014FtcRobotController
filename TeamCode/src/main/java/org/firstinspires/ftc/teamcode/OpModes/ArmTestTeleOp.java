@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.OpModes;
 
+import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.*;
+
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -14,6 +17,7 @@ public class ArmTestTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
+        FtcDashboard dashboard = FtcDashboard.getInstance();
         RobotBase actualRobot = new RobotBase(hardwareMap, gamepad1, gamepad2);
 
         actualRobot.initHardwareMap();
@@ -23,7 +27,11 @@ public class ArmTestTeleOp extends LinearOpMode {
 
         waitForStart();
 
+        // TODO: -> Test Lift -> Make sure Intake Flap Works -> Integrate intake flap & intake -> mix em' all
+
         while (opModeIsActive()) {
+
+            actualRobot.arm.turretLift.setPower(actualRobot.driverGamepad.rightJoystick.y());
 
             if(actualRobot.driverGamepad.left_bumper()) {
                 actualRobot.arm.setState(Arm.ARM_STATE.manualPointControl);
@@ -34,13 +42,13 @@ public class ArmTestTeleOp extends LinearOpMode {
 
             switch (actualRobot.driverGamepad.dpad()) {
                 case up:
-                    actualRobot.arm.setPointArmPosition(0.1);
+                    actualRobot.arm.setPointArmPosition(middle);
                     break;
                 case left:
-                    actualRobot.arm.setPointArmPosition(0);
+                    actualRobot.arm.setPointArmPosition(leftBound);
                     break;
                 case right:
-                    actualRobot.arm.setPointArmPosition(0.2);
+                    actualRobot.arm.setPointArmPosition(rightBound);
                     break;
                 default:
                     break;
@@ -48,6 +56,7 @@ public class ArmTestTeleOp extends LinearOpMode {
 
             actualRobot.update();
 
+            telemetry.addData("Arm", actualRobot.driverGamepad.rightJoystick.y());
             telemetry.addData("Arm Set Value", actualRobot.arm.armPosition);
             telemetry.addData("Arm State", actualRobot.arm.armState.toString());
 
