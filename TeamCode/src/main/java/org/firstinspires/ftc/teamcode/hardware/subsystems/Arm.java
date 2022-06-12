@@ -43,18 +43,21 @@ public class Arm implements Subsystem {
     public static double leftBound = 0, middle = 0.102, rightBound = 0.212;
     public static double speed = 0.4;
 
+    double orientation = startPositionInDegrees;
+
     // Flap
     public static double open = 0, closed = 0.3;
 
     // Lift Constants
     int ticksPerRev = 3896;
     double ticksPerDegree = ticksPerRev / 360.0;
-    public static double startPositionInDegrees = 15;
+    public static double startPositionInDegrees = 31;
 
-    PIDCoefficients liftCoef = new PIDCoefficients(0.0001, 0, 0);
+    public static double kP = 0.015, kI = 0, kD = 0;
+    PIDCoefficients liftCoef = new PIDCoefficients(kP, kI, kD);
     BasicPID liftPID = new BasicPID(liftCoef);
 
-    public static double ffCoef = 0.0001;
+    public static double ffCoef = 0.1;
 
     public Arm(HardwareMap hwMap) {
         this.hwMap = hwMap;
@@ -82,6 +85,10 @@ public class Arm implements Subsystem {
         pointArmPosition = p;
     }
 
+    public double getOrientation() {
+        return orientation;
+    }
+
     /**
      * Move the arm to the desisted "p" with a speed
      * @param p
@@ -102,7 +109,7 @@ public class Arm implements Subsystem {
         double currentPositionInDegrees = startPositionInDegrees + convertTurretLiftTicksToRadians(turretLift.getCurrentPosition());
 
         // Adjust the value of the lift to keep it up when gravity weighs on it the most
-        double ff = Math.sin(orientation) * ffCoef;
+        double ff = Math.sin(Math.toRadians(orientation)) * ffCoef;
 
         // Maybe switch orientation & currentPos
         double armPower = ff + liftPID.calculate(orientation, currentPositionInDegrees);
@@ -136,7 +143,7 @@ public class Arm implements Subsystem {
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        turretLift.setDirection(DcMotorSimple.Direction.FORWARD);
+        turretLift.setDirection(DcMotorSimple.Direction.REVERSE);
         turretLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turretLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         turretLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -145,6 +152,9 @@ public class Arm implements Subsystem {
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void update() throws InterruptedException {
+        orientation = startPositionInDegrees + convertTurretLiftTicksToRadians(turretLift.getCurrentPosition());
+
+
         switch (armState) {
             case manual:
                 heldPosition += manualTurnInput.getAsDouble()/(300/speed);
