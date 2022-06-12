@@ -5,7 +5,6 @@ import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.*;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.hardware.RobotBase;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.Arm;
@@ -23,36 +22,14 @@ public class ArmTestTeleOp extends LinearOpMode {
         actualRobot.initHardwareMap();
         actualRobot.driveTrain.setStartPosition(new Pose2D(0, 0, Math.toRadians(0)));
 
+        actualRobot.arm.setStartPosition(middle, 0);
         actualRobot.arm.setManualValue(()-> actualRobot.driverGamepad.leftJoystick.x());
 
         waitForStart();
 
-        // TODO: -> Test Lift -> Make sure Intake Flap Works -> Integrate intake flap & intake -> mix em' all
-
         while (opModeIsActive()) {
 
             actualRobot.arm.turretLift.setPower(actualRobot.driverGamepad.rightJoystick.y());
-
-            if(actualRobot.driverGamepad.left_bumper()) {
-                actualRobot.arm.setState(Arm.ARM_STATE.manualPointControl);
-            }
-            else if(actualRobot.driverGamepad.right_bumper()) {
-                actualRobot.arm.setState(Arm.ARM_STATE.manual);
-            }
-
-            switch (actualRobot.driverGamepad.dpad()) {
-                case up:
-                    actualRobot.arm.setPointArmPosition(middle);
-                    break;
-                case left:
-                    actualRobot.arm.setPointArmPosition(leftBound);
-                    break;
-                case right:
-                    actualRobot.arm.setPointArmPosition(rightBound);
-                    break;
-                default:
-                    break;
-            }
 
             actualRobot.update();
 
