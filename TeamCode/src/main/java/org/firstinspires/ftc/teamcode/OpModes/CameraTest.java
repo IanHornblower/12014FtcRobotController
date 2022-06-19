@@ -34,7 +34,7 @@ public class CameraTest extends LinearOpMode {
         waitForStart();
 
         while(opModeIsActive()) {
-            //camera.refreshScalars();
+            camera.refreshScalars();
 
             telemetry.addData("Location", camera.sDeterminePosition());
             telemetry.update();

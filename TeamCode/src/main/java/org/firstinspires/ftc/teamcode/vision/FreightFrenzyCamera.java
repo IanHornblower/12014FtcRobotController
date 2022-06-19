@@ -23,7 +23,7 @@ public class FreightFrenzyCamera {
     HardwareMap hwMap;
 
     private static int CAMERA_WIDTH  = 640; // width  of wanted camera resolution
-    private static int CAMERA_HEIGHT = 360; // height of wanted camera resolution
+    private static int CAMERA_HEIGHT = 480; // height of wanted camera resolution
 
     public static int lowestBlobArea = 200;
     public static int abVerticalLine = 213; //213
@@ -38,6 +38,9 @@ public class FreightFrenzyCamera {
     public static int borderBottomY = 25;   //amount of pixels from the bottom of the cam to skip
 
     // Color Range (Pink)                              Y      Cr     Cb
+
+    public static double lowerY = 145, lowerCr = 142, lowerCb = 0;
+    public static double upperY = 255, upperCr = 255, upperCb = 255;
     private static Scalar scalarLowerYCrCb = new Scalar(195.0, 0, 0);
     private static Scalar scalarUpperYCrCb = new Scalar(255.0, 255.0, 255.0);
 
@@ -75,15 +78,15 @@ public class FreightFrenzyCamera {
     }
 
     public void refreshScalars() {
-        pipeline.ConfigureScalarLower(scalarLowerYCrCb.val[0],scalarLowerYCrCb.val[1],scalarLowerYCrCb.val[2]);
-        pipeline.ConfigureScalarUpper(scalarUpperYCrCb.val[0],scalarUpperYCrCb.val[1],scalarUpperYCrCb.val[2]);
+        pipeline.ConfigureScalarLower(lowerY, lowerCr, lowerCb);
+        pipeline.ConfigureScalarUpper(upperY, upperCr, upperCb);
     }
 
     public void startCamera() {
         cam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                cam.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT);
+                cam.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.SIDEWAYS_LEFT);
             }
             @Override
             public void onError(int errorCode) {
