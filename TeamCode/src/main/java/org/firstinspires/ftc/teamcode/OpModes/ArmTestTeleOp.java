@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.*;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -20,8 +21,9 @@ public class ArmTestTeleOp extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-
         FtcDashboard dashboard = FtcDashboard.getInstance();
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+
         RobotBase actualRobot = new RobotBase(hardwareMap, gamepad1, gamepad2);
 
         actualRobot.initHardwareMap();
