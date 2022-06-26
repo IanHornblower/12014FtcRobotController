@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.math.Pose2D;
 @TeleOp(name = "Arm Test", group = "yes")
 public class ArmTestTeleOp extends LinearOpMode {
 
-    public static double or = 0.49;
+    public static double or = 90;
     public static double deg = 90;
 
     @Override
@@ -41,7 +41,15 @@ public class ArmTestTeleOp extends LinearOpMode {
 
             actualRobot.arm.setIntakeOrientation(or);
 
-            actualRobot.arm.setIntakePower(actualRobot.driverGamepad.rightTrigger.value()-actualRobot.driverGamepad.leftTrigger.value());
+            actualRobot.arm.setIntakePower(-actualRobot.driverGamepad.rightTrigger.value()+actualRobot.driverGamepad.leftTrigger.value());
+            //actualRobot.arm.setIntakePower(0);
+
+            if (gamepad1.left_bumper) {
+                actualRobot.arm.openFlap();
+            }
+            if(gamepad1.right_bumper) {
+                actualRobot.arm.closeFlap();
+            }
 
             actualRobot.update();
 

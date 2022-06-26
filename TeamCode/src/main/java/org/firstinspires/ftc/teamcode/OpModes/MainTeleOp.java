@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.OpModes;
 
+import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.middle;
+import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.orUP;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -10,6 +13,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.control.*;
 import org.firstinspires.ftc.teamcode.hardware.RobotBase;
+import org.firstinspires.ftc.teamcode.hardware.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.math.Point;
 import org.firstinspires.ftc.teamcode.math.Pose2D;
 import org.firstinspires.ftc.teamcode.util.Timer;
@@ -29,6 +33,14 @@ public class MainTeleOp extends LinearOpMode {
         actualRobot.initHardwareMap();
         actualRobot.driveTrain.setStartPosition(new Pose2D(0, 0, Math.toRadians(0)));
 
+        actualRobot.arm.setStartPosition(middle, 0);
+        actualRobot.arm.setManualValue(()-> actualRobot.operatorGamepad.leftJoystick.x());
+
+        Timer armTime = new Timer();
+
+        double armPos = Arm.startPositionInDegrees;
+        double orienterPos = Arm.orRegular;
+
         waitForStart();
 
         while (opModeIsActive()) {
@@ -46,8 +58,38 @@ public class MainTeleOp extends LinearOpMode {
                 ARM
              */
 
+            actualRobot.arm.setIntakePower(-actualRobot.operatorGamepad.rightTrigger.value()+actualRobot.operatorGamepad.leftTrigger.value());
 
+            //if(actualRobot.operatorGamepad.leftTrigger.isPressed() || actualRobot.operatorGamepad.rightTrigger.isPressed()) {
+            //    actualRobot.arm.setIntakeOrientation(0.53);
+            //}
 
+            switch (actualRobot.operatorGamepad.dpad()) {
+                case up:
+                    armPos = 190;
+                    orienterPos = 0.2;
+                    break;
+                case down:
+                    armPos = 35;
+                    orienterPos = 0.4;
+                    armTime.reset();
+                    if(armTime.currentSeconds() > 0.5) {
+                        armPos = 35;
+                    }
+                    break;
+                case left:
+                    orienterPos = 0.49;
+                default:
+
+                    break;
+            }
+
+            actualRobot.arm.setLiftPosition(armPos);
+            actualRobot.arm.setIntakeOrientation(orienterPos);
+
+            if(actualRobot.operatorGamepad.leftJoystick.isPressed()) {
+                actualRobot.arm.armPosition = middle;
+            }
 
 
             actualRobot.update();

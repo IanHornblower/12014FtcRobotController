@@ -47,9 +47,10 @@ public class Arm implements Subsystem {
     double pointArmPosition;
     public double armPosition;
     double heldPosition;
-    public static double leftBound = 0, middle = 0.102, rightBound = 0.212;
-    public static double or180 = 0, or90 = 0.49, or0 = 0;
-    public static double speed = 0.4;
+    public static double leftBound = 0, middle = 0.118, rightBound = 0.2189;
+    public static double or180 = 0.35, or90 = 0.49, or0 = 0.82, orZERO = 0;
+    public static double orStart = 1, orRegular = 0.49, orUP = 0.35, orIntake = 0.6;
+    public static double speed = 0.8;
     public static double distanceTolerance = 50;
     public static double openFlap = 0;
     public static double closedFlap = 0;
@@ -77,7 +78,7 @@ public class Arm implements Subsystem {
     PIDCoefficients liftCoef = new PIDCoefficients(kP, kI, kD);
     BasicPID liftPID = new BasicPID(liftCoef);
 
-    public static double ffCoef = 0.1;
+    public static double ffCoef = 0.3;
 
     public Arm(HardwareMap hwMap) {
         this.hwMap = hwMap;
@@ -203,9 +204,10 @@ public class Arm implements Subsystem {
         turretLUT.add(180, middle);
         turretLUT.add(360, rightBound);
 
+        orienterLUT.add(-40, orZERO);
         orienterLUT.add(0, or0);
         orienterLUT.add(90, or90);
-        orienterLUT.add(180, or180);
+        orienterLUT.add(100, or180);
 
         turretLUT.createLUT();
         orienterLUT.createLUT();

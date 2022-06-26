@@ -192,9 +192,9 @@ public class DriveTrain implements Subsystem {
 
         // Will be 3 diffrent motors
         localizer.initDoubleSuppliers(
-                ()-> 0,  // LEFT
-                ()-> 0,  // RIGHT
-                ()-> 0 // LATERAL
+                ()-> motors[0].getCurrentPosition(),  // LEFT
+                ()-> motors[1].getCurrentPosition(),  // RIGHT
+                ()-> motors[2].getCurrentPosition() // LATERAL
         );
 
         localizer.setConstants(12, 1120, 1, 0.0);
