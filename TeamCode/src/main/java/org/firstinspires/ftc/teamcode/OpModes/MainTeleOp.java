@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
 import org.firstinspires.ftc.teamcode.control.*;
 import org.firstinspires.ftc.teamcode.hardware.RobotBase;
 import org.firstinspires.ftc.teamcode.math.Point;
@@ -30,29 +32,20 @@ public class MainTeleOp extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
+            /*
+                DRIVE TRAIN
+             */
+
             double x = actualRobot.driverGamepad.leftJoystick.x();
             double y = actualRobot.driverGamepad.leftJoystick.y();
             double turn = actualRobot.driverGamepad.rightJoystick.x();
 
-            /**
-             *
-             *  To switch between different Drive Settings have 3 of the
-             *  actualRobot.driveTrain.[SOMETHING] Commented and leave one uncommented
-             *
-             *  ROBOT CENTRIC SETTINGS
-             */
-
-            //actualRobot.driveTrain.setMotorPowers(x, y, turn);
-
             actualRobot.driveTrain.setWeightedDrivePower(x, y, turn);
 
-            /**
-             *  FIELD CENTRIC SETTINGS
+            /*
+                ARM
              */
 
-            //actualRobot.driveTrain.driveFieldCentric(x, y, turn);
-
-            //actualRobot.driveTrain.setFieldCentricDrivePower(x, y, turn);
 
 
 
@@ -63,6 +56,7 @@ public class MainTeleOp extends LinearOpMode {
 
             for(DcMotorEx motors : actualRobot.driveTrain.motors) {
                 telemetry.addLine("Motor: " + motors.getPower());
+                telemetry.addData("Encoders", motors.getCurrentPosition());
             }
 
             double imuValue = actualRobot.driveTrain.localizer.imu.getHeadingInRadians();

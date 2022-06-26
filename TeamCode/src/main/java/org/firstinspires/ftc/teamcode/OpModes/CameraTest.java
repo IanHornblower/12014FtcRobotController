@@ -2,12 +2,14 @@ package org.firstinspires.ftc.teamcode.OpModes;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.stream.CameraStreamServer;
 import org.firstinspires.ftc.teamcode.vision.FreightFrenzyCamera;
 
+@Disabled
 @TeleOp(name = "Camera Test", group = "Testing")
 public class CameraTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {

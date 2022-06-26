@@ -8,6 +8,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.RobotBase;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.math.Pose2D;
@@ -43,6 +44,12 @@ public class ArmTestTeleOp extends LinearOpMode {
             actualRobot.arm.setIntakePower(actualRobot.driverGamepad.rightTrigger.value()-actualRobot.driverGamepad.leftTrigger.value());
 
             actualRobot.update();
+
+            telemetry.addData("Has Freight", actualRobot.arm.hasFreight());
+            telemetry.addData("Is Cube", actualRobot.arm.hasCube());
+
+            telemetry.addData("Color Sensor Distance", actualRobot.arm.detector.getDistance(DistanceUnit.MM));
+            telemetry.addData("Color Sensor Color", actualRobot.arm.detector.getNormalizedColors().toString());
 
             telemetry.addData("Arm", actualRobot.driverGamepad.rightJoystick.y());
             telemetry.addData("Arm Set Value", actualRobot.arm.armPosition);

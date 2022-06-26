@@ -8,18 +8,23 @@ import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.BasicPID;
 import com.ThermalEquilibrium.homeostasis.Parameters.PIDCoefficients;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.motors.GoBILDA5202Series;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.hardware.ServoControllerEx;
 import com.qualcomm.robotcore.hardware.configuration.annotations.MotorType;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.interfaces.Subsystem;
+import org.firstinspires.ftc.teamcode.util.InterpLUT;
 
 import java.util.function.DoubleSupplier;
 
@@ -32,6 +37,8 @@ public class Arm implements Subsystem {
     public DcMotorEx turretLift, intake;
     public Servo turret, intakeFlap, intakeOrienter;
 
+    public RevColorSensorV3 detector;
+
     public enum ARM_STATE {manual, manualPointControl}
 
     public ARM_STATE armState = null;
@@ -41,7 +48,20 @@ public class Arm implements Subsystem {
     public double armPosition;
     double heldPosition;
     public static double leftBound = 0, middle = 0.102, rightBound = 0.212;
+    public static double or180 = 0, or90 = 0.49, or0 = 0;
     public static double speed = 0.4;
+    public static double distanceTolerance = 50;
+    public static double openFlap = 0;
+    public static double closedFlap = 0;
+
+    InterpLUT turretLUT = new InterpLUT();
+    InterpLUT orienterLUT = new InterpLUT();
+
+    // TODO: When fixing robot -> move to ARM constants file
+
+    // Cube
+    public static int lR = 0, lG = 0, lB = 0, lA = 0; // Lower
+    public static int uR = 0, uG = 0, uB = 0, uA = 0; // Upper
 
     double orientation = startPositionInDegrees;
 
@@ -67,6 +87,8 @@ public class Arm implements Subsystem {
 
         intake = hwMap.get(DcMotorEx.class, "intake");
         turretLift = hwMap.get(DcMotorEx.class, "turretLift");
+
+        detector = hwMap.get(RevColorSensorV3.class, "detector");
     }
 
     public void setState(ARM_STATE state) {
@@ -99,6 +121,27 @@ public class Arm implements Subsystem {
         double armPower = speed * error/Math.abs(error);
 
         turretLift.setPower(armPower);
+    }
+
+    public boolean hasFreight() {
+        return detector.getDistance(DistanceUnit.MM) < distanceTolerance;
+
+    }
+
+    public boolean hasCube() {
+        int count = 0;
+
+        float r = detector.getNormalizedColors().alpha;
+        float g = detector.getNormalizedColors().green;
+        float b = detector.getNormalizedColors().blue;
+        float a = detector.getNormalizedColors().alpha;
+
+        if(r > lR && r < uR) count++;
+        if(g > lG && g < uG) count++;
+        if(b > lB && b < uB) count++;
+        if(a > lA && a < uA) count++;
+
+        return count == 4;
     }
 
     /**
@@ -135,6 +178,14 @@ public class Arm implements Subsystem {
         intakeFlap.setPosition(p);
     }
 
+    public void openFlap() {
+     setIntakeFlapPosition(openFlap);
+    }
+
+    public void closeFlap() {
+        setIntakeFlapPosition(closedFlap);
+    }
+
     @Override
     public void init() throws InterruptedException {
         armState = ARM_STATE.manual;
@@ -147,6 +198,17 @@ public class Arm implements Subsystem {
         turretLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turretLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         turretLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        turretLUT.add(0, leftBound);
+        turretLUT.add(180, middle);
+        turretLUT.add(360, rightBound);
+
+        orienterLUT.add(0, or0);
+        orienterLUT.add(90, or90);
+        orienterLUT.add(180, or180);
+
+        turretLUT.createLUT();
+        orienterLUT.createLUT();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
