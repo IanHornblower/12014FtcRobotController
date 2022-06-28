@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.OpModes;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.middle;
-import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.orUP;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -23,6 +26,7 @@ import java.util.ArrayList;
 @TeleOp(name = "Actual TeleOP", group = "yes")
 public class MainTeleOp extends LinearOpMode {
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void runOpMode() throws InterruptedException {
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -36,10 +40,9 @@ public class MainTeleOp extends LinearOpMode {
         actualRobot.arm.setStartPosition(middle, 0);
         actualRobot.arm.setManualValue(()-> actualRobot.operatorGamepad.leftJoystick.x());
 
-        Timer armTime = new Timer();
+        actualRobot.arm.setState(Arm.ARM_STATE.IDLE);
 
-        double armPos = Arm.startPositionInDegrees;
-        double orienterPos = Arm.orRegular;
+        actualRobot.arm.update();
 
         waitForStart();
 
@@ -58,39 +61,47 @@ public class MainTeleOp extends LinearOpMode {
                 ARM
              */
 
-            actualRobot.arm.setIntakePower(-actualRobot.operatorGamepad.rightTrigger.value()+actualRobot.operatorGamepad.leftTrigger.value());
+            actualRobot.arm.setIntakePower(actualRobot.operatorGamepad.leftTrigger.value()/5);
 
-            //if(actualRobot.operatorGamepad.leftTrigger.isPressed() || actualRobot.operatorGamepad.rightTrigger.isPressed()) {
-            //    actualRobot.arm.setIntakeOrientation(0.53);
+            if(actualRobot.operatorGamepad.circle()) {
+                actualRobot.arm.setState(Arm.ARM_STATE.DEPOSIT);
+            }
+
+            if(actualRobot.operatorGamepad.triangle()) {
+                actualRobot.arm.setState(Arm.ARM_STATE.PRIMED);
+            }
+
+            if(actualRobot.operatorGamepad.cross()) {
+                actualRobot.arm.setState(Arm.ARM_STATE.RETURN);
+            }
+
+            if(actualRobot.operatorGamepad.leftTrigger.isPressed()) {
+                actualRobot.arm.setState(Arm.ARM_STATE.INTAKING);
+            }
+            else {
+                actualRobot.arm.setState(Arm.ARM_STATE.IDLE);
+            }
+
+
+            //switch (actualRobot.operatorGamepad.dpad()) {
+            //    case up:
+            //        armPos = 190;
+            //        orienterPos = 0.2;
+            //        break;
+            //    case down:
+            //        armPos = 35;
+            //        orienterPos = 0.4;
+            //        armTime.reset();
+            //        if(armTime.currentSeconds() > 0.5) {
+            //            armPos = 35;
+            //        }
+            //        break;
+            //    case left:
+            //        orienterPos = 0.49;
+            //    default:
+//
+            //        break;
             //}
-
-            switch (actualRobot.operatorGamepad.dpad()) {
-                case up:
-                    armPos = 190;
-                    orienterPos = 0.2;
-                    break;
-                case down:
-                    armPos = 35;
-                    orienterPos = 0.4;
-                    armTime.reset();
-                    if(armTime.currentSeconds() > 0.5) {
-                        armPos = 35;
-                    }
-                    break;
-                case left:
-                    orienterPos = 0.49;
-                default:
-
-                    break;
-            }
-
-            actualRobot.arm.setLiftPosition(armPos);
-            actualRobot.arm.setIntakeOrientation(orienterPos);
-
-            if(actualRobot.operatorGamepad.leftJoystick.isPressed()) {
-                actualRobot.arm.armPosition = middle;
-            }
-
 
             actualRobot.update();
 

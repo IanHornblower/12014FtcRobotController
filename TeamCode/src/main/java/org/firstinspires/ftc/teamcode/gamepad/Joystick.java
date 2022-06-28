@@ -17,11 +17,15 @@ public class Joystick {
     }
 
     GamepadEx gamepadEx;
+    public Button joystick;
     SIDE side;
 
     public Joystick(GamepadEx gamepadEx, SIDE side) {
         this.gamepadEx = gamepadEx;
         this.side = side;
+
+        if(SIDE.left == side) this.joystick = new Button(()-> gamepadEx.gamepad().left_stick_button);
+        else this.joystick = new Button(()-> gamepadEx.gamepad().right_stick_button);
     }
 
     public void invert(AXIS axis) {

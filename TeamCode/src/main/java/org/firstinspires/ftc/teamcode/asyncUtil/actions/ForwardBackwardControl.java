@@ -31,7 +31,7 @@ public class ForwardBackwardControl extends Action {
 
         dt.setMotorPowers(fwController.calculate(ticks, totalTicks), fwController.calculate(ticks, totalTicks), fwController.calculate(ticks, totalTicks), fwController.calculate(ticks, totalTicks));
 
-        isComplete = Math.abs(totalTicks) > Math.abs(ticks);
+        isComplete = Math.abs(totalTicks) > Math.abs(ticks) && dt.getCombinedVelocity() < 0.5;
     }
 
     @Override

@@ -25,6 +25,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.interfaces.Subsystem;
 import org.firstinspires.ftc.teamcode.util.InterpLUT;
+import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.util.function.DoubleSupplier;
 
@@ -39,9 +40,13 @@ public class Arm implements Subsystem {
 
     public RevColorSensorV3 detector;
 
-    public enum ARM_STATE {manual, manualPointControl}
+    public enum ARM_STATE {
+        manual, manualPointControl, INTAKING, IDLE, PRIMED, DEPOSIT, RETURN
+    }
 
     public ARM_STATE armState = null;
+
+    Timer fsmTimer = new Timer();
 
     DoubleSupplier manualTurnInput;
     double pointArmPosition;
@@ -49,11 +54,15 @@ public class Arm implements Subsystem {
     double heldPosition;
     public static double leftBound = 0, middle = 0.118, rightBound = 0.2189;
     public static double or180 = 0.35, or90 = 0.49, or0 = 0.82, orZERO = 0;
-    public static double orStart = 1, orRegular = 0.49, orUP = 0.35, orIntake = 0.6;
+    public static double orIntaking = 0.49, orIdle = 0.49, orPrimed = 0.35, orDeposit = 0.6;
+    public static double orFunky = 0.2, turtFunky = 190;
     public static double speed = 0.8;
     public static double distanceTolerance = 50;
     public static double openFlap = 0;
     public static double closedFlap = 0;
+
+    double armPos = Arm.startPositionInDegrees;
+    double orienterPos = 0.4;
 
     InterpLUT turretLUT = new InterpLUT();
     InterpLUT orienterLUT = new InterpLUT();
@@ -187,11 +196,35 @@ public class Arm implements Subsystem {
         setIntakeFlapPosition(closedFlap);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void stateMachine() throws InterruptedException {
+        switch (armState) {
+            case manual:
+                heldPosition += manualTurnInput.getAsDouble()/(300/speed);
+                if(heldPosition > 0.2 || heldPosition < 0) {
+                    heldPosition = Range.clip(heldPosition, leftBound, rightBound);
+                }
+                armPosition = heldPosition;
+
+                if(turret.getPosition() != armPosition) {
+                    turret.setPosition(armPosition);
+                }
+                break;
+            case manualPointControl:
+                if(turret.getPosition() != pointArmPosition) {
+                    turret.setPosition(pointArmPosition);
+                }
+                break;
+            default:
+                throw new InterruptedException("State Error");
+        }
+    }
+
     @Override
     public void init() throws InterruptedException {
         armState = ARM_STATE.manual;
 
-        intake.setDirection(DcMotorSimple.Direction.FORWARD);
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -216,11 +249,26 @@ public class Arm implements Subsystem {
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void update() throws InterruptedException {
-        orientation = startPositionInDegrees + convertTurretLiftTicksToRadians(turretLift.getCurrentPosition());
-
+        //orientation = startPositionInDegrees + convertTurretLiftTicksToRadians(turretLift.getCurrentPosition());
 
         switch (armState) {
             case manual:
+                break;
+            case manualPointControl:
+                break;
+            case INTAKING:
+                orienterPos = orIntaking;
+                intake.setPower(0.7);
+                break;
+            case IDLE:
+                orienterPos = orIdle;
+                armPos = 31;
+                break;
+            case PRIMED:
+                armPos = 150;
+                orienterPos = orPrimed;
+                setTurretPosition(0.16);
+
                 heldPosition += manualTurnInput.getAsDouble()/(300/speed);
                 if(heldPosition > 0.2 || heldPosition < 0) {
                     heldPosition = Range.clip(heldPosition, leftBound, rightBound);
@@ -230,14 +278,32 @@ public class Arm implements Subsystem {
                 if(turret.getPosition() != armPosition) {
                     turret.setPosition(armPosition);
                 }
+
+                setTurretPosition(armPosition);
                 break;
-            case manualPointControl:
-                if(turret.getPosition() != pointArmPosition) {
-                    turret.setPosition(pointArmPosition);
+            case DEPOSIT:
+                fsmTimer.reset();
+                orienterPos = orDeposit;
+                openFlap();
+                setIntakePower(-0.3);
+                if(fsmTimer.currentSeconds() > 0.3) {
+                    setIntakePower(0.0);
                 }
+                armState = ARM_STATE.RETURN;
                 break;
-            default:
-                throw new InterruptedException("State Error");
+            case RETURN:
+                fsmTimer.reset();
+                closeFlap();
+                orienterPos = orIdle;
+                setTurretPosition(middle);
+                if(fsmTimer.currentSeconds() > 0.5) {
+                    armPos = 90;
+                }
+                armState = ARM_STATE.IDLE;
+                break;
         }
+
+        setLiftPosition(armPos);
+        setIntakeOrientation(orienterPos);
     }
 }

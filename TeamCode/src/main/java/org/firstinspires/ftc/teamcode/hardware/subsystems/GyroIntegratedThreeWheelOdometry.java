@@ -213,6 +213,27 @@ public class GyroIntegratedThreeWheelOdometry extends Odometry {
 
         correctAngle();
         mergeValues(dTheta);
+
+        updateAcumulatedHeading();
+    }
+
+    public double previousHeading = 0;
+    public double accumulatedHeading = 0;
+
+    public void updateAcumulatedHeading() {
+        double currentHeading = Math.toDegrees(getPose().getHeading());
+
+        double dHeading = currentHeading - previousHeading;
+
+        if(dHeading < -180) {
+            dHeading += 360;
+        }
+        else if(dHeading >= 180) {
+            dHeading -=360;
+        }
+
+        accumulatedHeading -= dHeading;
+        previousHeading = currentHeading;
     }
 
     public void mergeValues(double deltaTheta) {

@@ -1,6 +1,12 @@
 package org.firstinspires.ftc.teamcode.gamepad;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import com.qualcomm.robotcore.hardware.Gamepad;
+
+import static org.firstinspires.ftc.teamcode.util.MathUtil.roundPlaces;
 
 public class GamepadEx {
 
@@ -9,6 +15,9 @@ public class GamepadEx {
     public Joystick rightJoystick;
     public Trigger leftTrigger;
     public Trigger rightTrigger;
+
+    public Button leftBumper, rightBumper, dpadLeft, dpadUp, dpadRight, dpadDown, square, triangle, circle, cross;
+    public Button[] buttons;
 
     public static enum DPAD {
         left,
@@ -31,30 +40,54 @@ public class GamepadEx {
         this.rightJoystick = new Joystick(this, Joystick.SIDE.right);
         this.leftTrigger = new Trigger(this, Trigger.SIDE.left);
         this.rightTrigger = new Trigger(this, Trigger.SIDE.right);
+
+        this.leftBumper = new Button(()-> gamepad.left_bumper);
+        this.rightBumper = new Button(()-> gamepad.right_bumper);
+        this.dpadLeft = new Button(()-> gamepad.dpad_left);
+        this.dpadRight = new Button(()-> gamepad.dpad_right);
+        this.dpadUp = new Button(()-> gamepad.dpad_up);
+        this.dpadDown = new Button(()-> gamepad.dpad_down);
+        this.square = new Button(()-> gamepad.square);
+        this.triangle = new Button(()-> gamepad.triangle);
+        this.circle = new Button(()-> gamepad.circle);
+        this.cross = new Button(()-> gamepad.cross);
+
+        buttons = new Button[]{leftBumper, rightBumper, dpadLeft, dpadUp, dpadRight, dpadDown, square, triangle, circle, cross};
     }
 
     public Gamepad gamepad() {
         return gamepad;
     }
 
+    public void init() {
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void update() {
+        for(Button button : buttons) {
+            button.update();
+        }
+    }
+
     /*
-          // Bumpers //
+          // Buttons //
      */
 
     public boolean cross() {
-        return gamepad.cross;
+        return cross.isPressed();
     }
 
     public boolean circle() {
-        return gamepad.circle;
+        return circle.isPressed();
     }
 
     public boolean square() {
-        return gamepad.square;
+        return square.isPressed();
     }
 
     public boolean triangle() {
-        return gamepad.triangle;
+        return triangle.isPressed();
     }
 
     /*
@@ -62,19 +95,19 @@ public class GamepadEx {
      */
 
     public boolean dpad_left() {
-        return gamepad.dpad_left;
+        return dpadLeft.isPressed();
     }
 
     public boolean dpad_right() {
-        return gamepad.dpad_right;
+        return dpadRight.isPressed;
     }
 
     public boolean dpad_up() {
-        return gamepad.dpad_up;
+        return dpadUp.isPressed();
     }
 
     public boolean dpad_down() {
-        return gamepad.dpad_down;
+        return dpadDown.isPressed();
     }
 
     public DPAD dpad() {
@@ -90,11 +123,11 @@ public class GamepadEx {
      */
 
     public boolean left_bumper() {
-        return gamepad.left_bumper;
+        return leftBumper.isPressed();
     }
 
     public boolean right_bumper() {
-        return gamepad.right_bumper;
+        return rightBumper.isPressed();
     }
 
     public BUMPER bumpers() {
@@ -109,11 +142,20 @@ public class GamepadEx {
      */
 
     public void rumble(int duration) {
-        //gamepad.rumble(duration); // Re-Enable in actual SDK
+        gamepad.rumble(duration);
     }
 
     public void rumbleBlips(int count) {
-        //gamepad.rumbleBlips(count); // Re-Enable in actual SDK
+        gamepad.rumbleBlips(count);
+    }
+
+    public String toString(String gamepad) {
+        String title = gamepad + ": \n";
+        String leftJoysticks = "Left Joystick: x: " +   roundPlaces(leftJoystick.x(), 2) +  "  y: " + roundPlaces(leftJoystick.y(), 2);
+        String rightJoysticks = "Right Joystick: x: " + roundPlaces(rightJoystick.x(), 2) + "  y: " + roundPlaces(rightJoystick.y(), 2);
+        String triggers = "Left Trigger: " + leftTrigger.howPressed().toString() + " value: " + roundPlaces(leftTrigger.value(), 2) + "  Right Trigger: " + rightTrigger.howPressed().toString() + " value: " + roundPlaces(rightTrigger.value(), 2);
+
+        return title + leftJoysticks + "\n" + rightJoysticks + "\n" + triggers;
     }
 
 }

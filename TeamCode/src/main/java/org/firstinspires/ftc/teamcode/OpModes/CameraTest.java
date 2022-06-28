@@ -13,7 +13,6 @@ import org.firstinspires.ftc.teamcode.vision.FreightFrenzyCamera;
 @TeleOp(name = "Camera Test", group = "Testing")
 public class CameraTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
-
         FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 

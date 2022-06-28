@@ -14,7 +14,7 @@ public class Trigger {
         unpressed
     }
 
-    double light = 0.1;
+    double light = 0.0;
     double half = 0.4;
     double down = 0.7;
 

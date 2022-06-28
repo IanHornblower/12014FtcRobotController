@@ -163,6 +163,13 @@ public class DriveTrain implements Subsystem {
         driveFieldCentric(vel.x, vel.y, vel.heading);
     }
 
+    public double getCombinedVelocity() {
+        double xVel = Math.abs(motors[3].getVelocity());
+        double yVel = ( Math.abs(motors[0].getVelocity()) + Math.abs(motors[1].getVelocity()) ) / 2.0;
+
+        return xVel * yVel;
+    }
+
     public void runToPosition(double x, double y, double heading) throws InterruptedException {
         motionProfile.runToPosition(this, x, y, heading);
     }
@@ -194,10 +201,10 @@ public class DriveTrain implements Subsystem {
         localizer.initDoubleSuppliers(
                 ()-> motors[0].getCurrentPosition(),  // LEFT
                 ()-> motors[1].getCurrentPosition(),  // RIGHT
-                ()-> motors[2].getCurrentPosition() // LATERAL
+                ()-> motors[3].getCurrentPosition() // LATERAL
         );
 
-        localizer.setConstants(12, 1120, 1, 0.0);
+        localizer.setConstants(TrackWidth, TicksPerRev, WheelRadius, LateralOffset);
         localizer.setMeasurement(GyroIntegratedThreeWheelOdometry.inputMeasurement.INCH);
 
         localizer.setKalmanConstants(0.0, 1, 3, 1, 0.0);

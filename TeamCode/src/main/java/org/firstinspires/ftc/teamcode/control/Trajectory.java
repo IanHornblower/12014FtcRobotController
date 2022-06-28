@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.control;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import org.firstinspires.ftc.teamcode.hardware.subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.math.Pose2D;
 import org.firstinspires.ftc.teamcode.util.AngleUtil;
 
@@ -15,6 +16,11 @@ public class Trajectory extends LinearOpMode {
     boolean isStarted = false;
 
     public Trajectory() {
+    }
+
+    public Trajectory(DriveTrain dt, Pose2D end) {
+        path.add(dt.localizer.getPose());
+        path.add(end);
     }
 
     public enum controlType {FIELD, ROBOT}
@@ -49,6 +55,18 @@ public class Trajectory extends LinearOpMode {
 
     public boolean getStart() {
         return isStarted;
+    }
+
+    public Pose2D end() {
+        return path.get(path.size()-1);
+    }
+    public static double[] getSegmentLengths(ArrayList<Pose2D> path) {
+        double[] lengths = new double[path.size()-1];
+        for(int i = 0; i < path.size()-1; i++) {
+            lengths[i] = path.get(i).getDistanceFrom(path.get(i+1));
+        }
+
+        return lengths;
     }
 
     public void forward(double distance, controlType style) {

@@ -20,8 +20,12 @@ public class ActionSequenceRunner {
         this.robotBase = robotBase;
     }
 
-    public void setActionSequence(ArrayList<Action> actionList) {
+    public void setActionArrayList(ArrayList<Action> actionList) {
         this.actionList = actionList;
+    }
+
+    public void setActionSequence(ActionSequence actionSequence){
+        this.actionList = actionSequence.getActionList();
     }
 
     public void update() throws InterruptedException {
