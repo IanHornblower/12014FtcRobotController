@@ -17,7 +17,6 @@ import org.firstinspires.ftc.teamcode.math.Pose2D;
 
 import java.util.ArrayList;
 
-@Disabled
 @TeleOp(name = "Action Testing", group = "no")
 public class ActionTeleOpTest extends LinearOpMode {
 
@@ -29,14 +28,21 @@ public class ActionTeleOpTest extends LinearOpMode {
         RobotBase actualRobot = new RobotBase(hardwareMap, gamepad1, gamepad2);
         ActionSequenceRunner runner = new ActionSequenceRunner(actualRobot);
 
+        Trajectory traj = new Trajectory();
+        traj.add(new Pose2D(0, 0, 0));
+        traj.add(new Pose2D(0, 24, 0));
+
         actualRobot.initHardwareMap();
         //actualRobot.driveTrain.setStartPosition(new Pose2D(63, 12, Math.toRadians(90)));
         actualRobot.driveTrain.setStartPosition(new Pose2D(0, 0, Math.toRadians(0)));
 
-        ActionSequence as = new ActionSequence();
-        as.addAction(new IMURotate(actualRobot.driveTrain, Math.toRadians(90)));
-        as.addAction(new Wait(1));
-        as.addAction(new IMURotate(actualRobot.driveTrain, Math.toRadians(0)));
+        ActionSequence as = new ActionSequence(actualRobot);
+        as.addForwardBackwardControl(30000);
+        as.addWait(1);
+        as.addRotate(Math.toRadians(90));
+        as.addWait(1);
+        as.addRunToPosition(new Pose2D(24, 24, Math.toRadians(0)));
+
         /*
          *  as.addAction(new EncoderDrive(actualRobot.driveTrain, 0.5, 0.5, 0, 5000));
          *  as.addAction(new Wait(.5));
@@ -45,7 +51,7 @@ public class ActionTeleOpTest extends LinearOpMode {
          *  as.addAction(new EncoderDriveEx(actualRobot.driveTrain, 1, 1, Math.toRadians(0), 5000));
          */
 
-        runner.setActionSequence(as.getActionList());
+        runner.setActionSequence(as);
 
         waitForStart();
 

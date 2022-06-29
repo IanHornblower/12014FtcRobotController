@@ -40,7 +40,7 @@ public class MainTeleOp extends LinearOpMode {
         actualRobot.arm.setStartPosition(middle, 0);
         actualRobot.arm.setManualValue(()-> actualRobot.operatorGamepad.leftJoystick.x());
 
-        actualRobot.arm.setState(Arm.ARM_STATE.IDLE);
+        actualRobot.arm.setState(Arm.ARM_STATE.manual);
 
         actualRobot.arm.update();
 
@@ -78,7 +78,7 @@ public class MainTeleOp extends LinearOpMode {
             if(actualRobot.operatorGamepad.leftTrigger.isPressed()) {
                 actualRobot.arm.setState(Arm.ARM_STATE.INTAKING);
             }
-            else {
+            else if(!actualRobot.operatorGamepad.leftTrigger.isPressed() && actualRobot.arm.getState().equals(Arm.ARM_STATE.INTAKING)) {
                 actualRobot.arm.setState(Arm.ARM_STATE.IDLE);
             }
 
@@ -111,6 +111,8 @@ public class MainTeleOp extends LinearOpMode {
                 telemetry.addLine("Motor: " + motors.getPower());
                 telemetry.addData("Encoders", motors.getCurrentPosition());
             }
+
+            telemetry.addData("Pos", actualRobot.driveTrain.localizer.getPose().toString());
 
             double imuValue = actualRobot.driveTrain.localizer.imu.getHeadingInRadians();
             telemetry.addData("IMU", Math.toDegrees(imuValue));

@@ -105,6 +105,10 @@ public class Arm implements Subsystem {
         armState = state;
     }
 
+    public ARM_STATE getState() {
+        return armState;
+    }
+
     public void setStartPosition(double turretPos, double armPos) {
         heldPosition = turretPos;
     }
@@ -222,9 +226,9 @@ public class Arm implements Subsystem {
 
     @Override
     public void init() throws InterruptedException {
-        armState = ARM_STATE.manual;
+        armState = ARM_STATE.IDLE;
 
-        intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        intake.setDirection(DcMotorSimple.Direction.FORWARD);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -263,6 +267,7 @@ public class Arm implements Subsystem {
             case IDLE:
                 orienterPos = orIdle;
                 armPos = 31;
+                setTurretPosition(middle);
                 break;
             case PRIMED:
                 armPos = 150;

@@ -43,37 +43,47 @@ public class TuneOdometricConstants extends LinearOpMode {
         telemetry.addLine("Press X to start");
         telemetry.update();
 
-        do {
-            if(gamepad1.x || gamepad2.x) {
-
-                ran = true;
-            }
-        } while(!ran);
-
         waitForStart();
 
         while(opModeIsActive()) {
-            while(actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees() > 1000) {
-                actualRobot.driveTrain.setMotorPowers(0, 0, 1);
+            while(actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees() < 350) {
+                actualRobot.driveTrain.setMotorPowers(0, 0, 0.3);
 
                 telemetry.addData("XYH", actualRobot.driveTrain.localizer.getPose().toString());
-                telemetry.addData("Odom Angle", actualRobot.driveTrain.localizer.getPose().heading);
+                telemetry.addData("Odom Angle", -actualRobot.driveTrain.localizer.accumulatedHeading);
                 telemetry.addData("IMU Angle", actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees());
                 telemetry.addData("Latteral Encoder Reading", actualRobot.driveTrain.motors[3].getCurrentPosition());
 
-                telemetry.addData("\nError", actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees()-actualRobot.driveTrain.localizer.accumulatedHeading);
-                telemetry.addData("Error Percent", actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees()/actualRobot.driveTrain.localizer.accumulatedHeading);
-                telemetry.addData("Track Width Multiplier", actualRobot.driveTrain.localizer.accumulatedHeading/actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees());
-                telemetry.addData("New Track Width (L) ", TrackWidth * (actualRobot.driveTrain.localizer.accumulatedHeading/actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees()));
+                telemetry.addData("\nError", actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees()+actualRobot.driveTrain.localizer.accumulatedHeading);
+                telemetry.addData("Error Percent", actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees()/-actualRobot.driveTrain.localizer.accumulatedHeading);
+                telemetry.addData("Track Width Multiplier", -actualRobot.driveTrain.localizer.accumulatedHeading/actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees());
+                telemetry.addData("New Track Width (L) ", TrackWidth * (-actualRobot.driveTrain.localizer.accumulatedHeading/actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees()));
 
                 double inchPerTick = (2.0 * Math.PI * WheelRadius / TicksPerRev);
 
+
                 telemetry.addData("\nLatteral Encoder Offset", (actualRobot.driveTrain.motors[3].getCurrentPosition()/Math.toRadians(actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees()))*inchPerTick);
                 telemetry.update();
+
+                actualRobot.update();
             }
             actualRobot.driveTrain.stopDriveTrain();
 
+            telemetry.addData("XYH", actualRobot.driveTrain.localizer.getPose().toString());
+            telemetry.addData("Odom Angle", actualRobot.driveTrain.localizer.getPose().heading);
+            telemetry.addData("IMU Angle", actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees());
+            telemetry.addData("Latteral Encoder Reading", actualRobot.driveTrain.motors[3].getCurrentPosition());
 
+            telemetry.addData("\nError", actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees()-actualRobot.driveTrain.localizer.accumulatedHeading);
+            telemetry.addData("Error Percent", actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees()/actualRobot.driveTrain.localizer.accumulatedHeading);
+            telemetry.addData("Track Width Multiplier", actualRobot.driveTrain.localizer.accumulatedHeading/actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees());
+            telemetry.addData("New Track Width (L) ", TrackWidth * (actualRobot.driveTrain.localizer.accumulatedHeading/actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees()));
+
+            double inchPerTick = (2.0 * Math.PI * WheelRadius / TicksPerRev);
+
+
+            telemetry.addData("\nLatteral Encoder Offset", (actualRobot.driveTrain.motors[3].getCurrentPosition()/Math.toRadians(actualRobot.driveTrain.localizer.imu.getAccumulatedHeadingInDegrees()))*inchPerTick);
+            telemetry.update();
 
             actualRobot.update();
         }
