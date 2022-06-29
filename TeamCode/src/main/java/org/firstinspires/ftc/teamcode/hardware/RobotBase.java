@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.gamepad.GamepadEx;
 import org.firstinspires.ftc.teamcode.gamepad.Joystick;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.*;
@@ -11,7 +13,7 @@ import org.firstinspires.ftc.teamcode.hardware.subsystems.interfaces.Subsystem;
 
 public class RobotBase extends OpMode implements Robot {
 
-    public DriveTrain driveTrain;
+    public SampleMecanumDrive driveTrain;
     public Duck duck;
     public Arm arm;
 
@@ -21,7 +23,7 @@ public class RobotBase extends OpMode implements Robot {
     public GamepadEx operatorGamepad;
 
     public RobotBase (HardwareMap hwMap, Gamepad gamepad1, Gamepad gamepad2) {
-        driveTrain = new DriveTrain(hwMap);
+        driveTrain = new SampleMecanumDrive(hwMap);
         duck = new Duck(hwMap);
         arm = new Arm(hwMap);
 
@@ -47,13 +49,12 @@ public class RobotBase extends OpMode implements Robot {
 
     @Override
     public void resetEncoders() {
-        driveTrain.resetEncoders();
         duck.resetEncoder();
     }
 
     @Override
     public void emergencyStop() {
-        driveTrain.emergencyStop();
+        driveTrain.setMotorPowers(0, 0, 0, 0);
     }
 
     @Override

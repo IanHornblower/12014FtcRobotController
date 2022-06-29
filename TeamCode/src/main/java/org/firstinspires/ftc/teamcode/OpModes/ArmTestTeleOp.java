@@ -28,28 +28,13 @@ public class ArmTestTeleOp extends LinearOpMode {
         RobotBase actualRobot = new RobotBase(hardwareMap, gamepad1, gamepad2);
 
         actualRobot.initHardwareMap();
-        actualRobot.driveTrain.setStartPosition(new Pose2D(0, 0, Math.toRadians(0)));
-
-        actualRobot.arm.setStartPosition(middle, 0);
-        actualRobot.arm.setManualValue(()-> actualRobot.driverGamepad.leftJoystick.x());
 
         waitForStart();
 
         while (opModeIsActive()) {
 
-            actualRobot.arm.setLiftPosition(deg);
 
-            actualRobot.arm.setIntakeOrientation(or);
 
-            actualRobot.arm.setIntakePower(-actualRobot.driverGamepad.rightTrigger.value()+actualRobot.driverGamepad.leftTrigger.value());
-            //actualRobot.arm.setIntakePower(0);
-
-            if (gamepad1.left_bumper) {
-                actualRobot.arm.openFlap();
-            }
-            if(gamepad1.right_bumper) {
-                actualRobot.arm.closeFlap();
-            }
 
             actualRobot.update();
 
@@ -63,11 +48,7 @@ public class ArmTestTeleOp extends LinearOpMode {
             telemetry.addData("Arm Set Value", actualRobot.arm.armPosition);
             telemetry.addData("Arm State", actualRobot.arm.armState.toString());
 
-            telemetry.addData("Arm Lift Orentation", actualRobot.arm.getOrientation());
             telemetry.addData("Arm Position", actualRobot.arm.turretLift.getCurrentPosition());
-
-            double imuValue = actualRobot.driveTrain.localizer.imu.getHeadingInRadians();
-            telemetry.addData("IMU", Math.toDegrees(imuValue));
             telemetry.update();
         }
 

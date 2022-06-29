@@ -4,17 +4,15 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
-import static org.firstinspires.ftc.teamcode.hardware.subsystems.Arm.middle;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode.control.*;
 import org.firstinspires.ftc.teamcode.hardware.RobotBase;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.math.Point;
@@ -35,14 +33,7 @@ public class MainTeleOp extends LinearOpMode {
         RobotBase actualRobot = new RobotBase(hardwareMap, gamepad1, gamepad2);
 
         actualRobot.initHardwareMap();
-        actualRobot.driveTrain.setStartPosition(new Pose2D(0, 0, Math.toRadians(0)));
-
-        actualRobot.arm.setStartPosition(middle, 0);
-        actualRobot.arm.setManualValue(()-> actualRobot.operatorGamepad.leftJoystick.x());
-
-        actualRobot.arm.setState(Arm.ARM_STATE.manual);
-
-        actualRobot.arm.update();
+        actualRobot.driveTrain.setPoseEstimate(new Pose2d(0, 0, 0));
 
         waitForStart();
 
@@ -55,16 +46,16 @@ public class MainTeleOp extends LinearOpMode {
             double y = actualRobot.driverGamepad.leftJoystick.y();
             double turn = actualRobot.driverGamepad.rightJoystick.x();
 
-            actualRobot.driveTrain.setWeightedDrivePower(x, y, turn);
+            actualRobot.driveTrain.setWeightedDrivePower(new Pose2d(x, y, turn));
 
             /*
                 ARM
              */
 
-            actualRobot.arm.setIntakePower(actualRobot.operatorGamepad.leftTrigger.value()/5);
-
             if(actualRobot.operatorGamepad.circle()) {
-                actualRobot.arm.setState(Arm.ARM_STATE.DEPOSIT);
+                if(actualRobot.arm.getState() == Arm.ARM_STATE.PRIMED) {
+                    actualRobot.arm.setState(Arm.ARM_STATE.DEPOSIT);
+                }
             }
 
             if(actualRobot.operatorGamepad.triangle()) {
@@ -76,46 +67,26 @@ public class MainTeleOp extends LinearOpMode {
             }
 
             if(actualRobot.operatorGamepad.leftTrigger.isPressed()) {
-                actualRobot.arm.setState(Arm.ARM_STATE.INTAKING);
+                if(actualRobot.arm.getState() == Arm.ARM_STATE.IDLE) {
+                    actualRobot.arm.setState(Arm.ARM_STATE.INTAKING);
+                }
+                else {
+                    actualRobot.arm.setState(Arm.ARM_STATE.IDLE);
+                }
             }
-            else if(!actualRobot.operatorGamepad.leftTrigger.isPressed() && actualRobot.arm.getState().equals(Arm.ARM_STATE.INTAKING)) {
-                actualRobot.arm.setState(Arm.ARM_STATE.IDLE);
-            }
-
-
-            //switch (actualRobot.operatorGamepad.dpad()) {
-            //    case up:
-            //        armPos = 190;
-            //        orienterPos = 0.2;
-            //        break;
-            //    case down:
-            //        armPos = 35;
-            //        orienterPos = 0.4;
-            //        armTime.reset();
-            //        if(armTime.currentSeconds() > 0.5) {
-            //            armPos = 35;
-            //        }
-            //        break;
-            //    case left:
-            //        orienterPos = 0.49;
-            //    default:
-//
-            //        break;
-            //}
 
             actualRobot.update();
+
+            telemetry.addData("ARM STATE", actualRobot.arm.getState().toString());
 
             telemetry.addLine("Front Left = 0, Front Right = 1, Back Left = 2, Back Right = 3");
 
             for(DcMotorEx motors : actualRobot.driveTrain.motors) {
                 telemetry.addLine("Motor: " + motors.getPower());
-                telemetry.addData("Encoders", motors.getCurrentPosition());
+                //telemetry.addData("Encoders", motors.getCurrentPosition());
             }
 
-            telemetry.addData("Pos", actualRobot.driveTrain.localizer.getPose().toString());
-
-            double imuValue = actualRobot.driveTrain.localizer.imu.getHeadingInRadians();
-            telemetry.addData("IMU", Math.toDegrees(imuValue));
+            telemetry.addData("Pos", actualRobot.driveTrain.getPoseEstimate().toString());
             telemetry.update();
         }
 
