@@ -79,11 +79,11 @@ public class MainTeleOp extends LinearOpMode {
 
             telemetry.addData("ARM STATE", actualRobot.arm.getState().toString());
 
-            telemetry.addLine("Front Left = 0, Front Right = 1, Back Left = 2, Back Right = 3");
+            telemetry.addLine("Front Left = 0, Back Left = 1, Back Right = 2, Back Left = 3");
 
             for(DcMotorEx motors : actualRobot.driveTrain.motors) {
-                telemetry.addLine("Motor: " + motors.getPower());
-                //telemetry.addData("Encoders", motors.getCurrentPosition());
+                //telemetry.addLine("Motor: " + motors.getPower());
+                telemetry.addData("Encoders", motors.getCurrentPosition());
             }
 
             telemetry.addData("Pos", actualRobot.driveTrain.getPoseEstimate().toString());
