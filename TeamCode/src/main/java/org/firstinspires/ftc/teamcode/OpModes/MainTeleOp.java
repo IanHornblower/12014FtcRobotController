@@ -5,6 +5,7 @@ import android.os.Build;
 import androidx.annotation.RequiresApi;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -21,8 +22,11 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 
 import java.util.ArrayList;
 
+@Config
 @TeleOp(name = "Actual TeleOP", group = "yes")
 public class MainTeleOp extends LinearOpMode {
+
+    public static double speed = 0.1;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -52,28 +56,9 @@ public class MainTeleOp extends LinearOpMode {
                 ARM
              */
 
-            if(actualRobot.operatorGamepad.circle()) {
-                if(actualRobot.arm.getState() == Arm.ARM_STATE.PRIMED) {
-                    actualRobot.arm.setState(Arm.ARM_STATE.DEPOSIT);
-                }
-            }
 
-            if(actualRobot.operatorGamepad.triangle()) {
-                actualRobot.arm.setState(Arm.ARM_STATE.PRIMED);
-            }
-
-            if(actualRobot.operatorGamepad.cross()) {
-                actualRobot.arm.setState(Arm.ARM_STATE.RETURN);
-            }
-
-            if(actualRobot.operatorGamepad.leftTrigger.isPressed()) {
-                if(actualRobot.arm.getState() == Arm.ARM_STATE.IDLE) {
-                    actualRobot.arm.setState(Arm.ARM_STATE.INTAKING);
-                }
-                else {
-                    actualRobot.arm.setState(Arm.ARM_STATE.IDLE);
-                }
-            }
+            actualRobot.arm.setIntake(gamepad2.right_trigger - gamepad2.right_trigger);
+            actualRobot.arm.turret.setPower(gamepad2.left_stick_x);
 
             actualRobot.update();
 

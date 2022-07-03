@@ -22,6 +22,7 @@ import com.qualcomm.robotcore.hardware.ServoControllerEx;
 import com.qualcomm.robotcore.hardware.configuration.annotations.MotorType;
 import com.qualcomm.robotcore.util.Range;
 
+import org.apache.commons.math3.analysis.solvers.RegulaFalsiSolver;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.ArmConstants;
 import org.firstinspires.ftc.teamcode.hardware.subsystems.interfaces.Subsystem;
@@ -38,10 +39,16 @@ import static org.firstinspires.ftc.teamcode.hardware.ArmConstants.FreightDetect
 public class Arm implements Subsystem {
 
     HardwareMap hwMap;
-    public DcMotorEx turretLift, intake; //, turret;
-    public Servo turret, intakeFlap, intakeOrienter;
+    public DcMotorEx turretLift, intake, turret;
+    public Servo intakeFlap, intakeOrienter;
 
     public RevColorSensorV3 detector;
+
+    public static double turretPosition = ArmConstants.Turret.startPosition;
+    public static double orienterPosition = ArmConstants.Orienter.start;
+    public static double liftPosition = ArmConstants.Lift.startPosition;
+    public static double flapPosition = ArmConstants.Flap.closed;
+    public static double intakeSpeed = 0.0;
 
     public enum ARM_STATE {
         INTAKING, OUTTAKE, IDLE, PRIMED, DEPOSIT, RETURN, FLOAT
@@ -58,12 +65,11 @@ public class Arm implements Subsystem {
 
     public Arm(HardwareMap hwMap) {
         this.hwMap = hwMap;
-        turret = hwMap.get(Servo.class, "turret");
-        //turret = hwMap.get(DcMotorEx.class, "turret");
+        turret = hwMap.get(DcMotorEx.class, "turret");
         intakeFlap = hwMap.get(Servo.class, "intakeFlap");
         intakeOrienter = hwMap.get(Servo.class, "endTurn");
 
-        intake = hwMap.get(DcMotorEx.class, "intake");
+        intake = hwMap.get(DcMotorEx.class, "inTake");
         turretLift = hwMap.get(DcMotorEx.class, "turretLift");
 
         detector = hwMap.get(RevColorSensorV3.class, "detector");
@@ -81,6 +87,11 @@ public class Arm implements Subsystem {
     public void init() throws InterruptedException {
         armState = ARM_STATE.IDLE;
 
+        //turret.setDirection(DcMotorSimple.Direction.REVERSE);
+        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         intake.setDirection(DcMotorSimple.Direction.FORWARD);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -89,59 +100,47 @@ public class Arm implements Subsystem {
         turretLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turretLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         turretLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        ArmConstants.Turret.initTurretLUT();
+    }
+    /*
+        Turret
+     */
+
+    public void setTurret(double position) {
+        turretPosition = position;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    @Override
-    public void update() throws InterruptedException {
-        switch (armState) {
-            case INTAKING:
-                //Orienter Down
-                //Intake Spinning
-                //Lift pushed all the way down
-                break;
-            case OUTTAKE:
-                // Spit out
-                break;
+    private double getAdjustedTurretPosition() {
+        return turret.getCurrentPosition() + ArmConstants.Turret.halfRotation;
+    }
 
-            case IDLE:
-                break;
-            case PRIMED:
-                break;
-            case DEPOSIT:
-                break;
-            case RETURN:
-                break;
-            case FLOAT:
-                break;
+    private void setTurretPosition(double orientation) {
+        double actualOrientation = ArmConstants.Turret.turretLUT.get(orientation);
+
+        double power = ArmConstants.Turret.turretPID.calculate(actualOrientation, getAdjustedTurretPosition());
+        turret.setPower(power);
+    }
+
+    private void simpleSetTurretPosition(double orientation, double speed) {
+        double actualOrientation = ArmConstants.Turret.turretLUT.get(orientation);
+
+        double power = speed * (actualOrientation - getAdjustedTurretPosition())/ Math.abs(actualOrientation - getAdjustedTurretPosition());
+        if(Math.abs(actualOrientation - getAdjustedTurretPosition()) < ArmConstants.Turret.simpleTolerance) {
+            turret.setPower(power);
         }
+        turret.setPower(0.0);
     }
 
     /*
-        Lift
+        Intake
      */
 
-    /**
-     * Move the arm to the desisted orientation "o"
-     * @param orientation
-     */
-    public void setLiftPosition(double orientation) {
-        double currentPositionInDegrees = ArmConstants.Lift.startPosition + convertTurretLiftTicksToRadians(turretLift.getCurrentPosition());
-
-        // Adjust the value of the lift to keep it up when gravity weighs on it the most
-        double ff = Math.sin(Math.toRadians(orientation)) * ArmConstants.Lift.ffCoef;
-
-        // Maybe switch orientation & currentPos
-        double armPower = ff + ArmConstants.Lift.liftPID.calculate(orientation, currentPositionInDegrees);
-
-        turretLift.setPower(armPower);
+    public void setIntake(double power) {
+        intakeSpeed = power;
     }
 
-    public double convertTurretLiftTicksToRadians(int ticks) {
-        return (double) ticks / ArmConstants.Lift.ticksPerDegree;
-    }
-
-    public void setIntakePower(double p) {
+    private void setIntakePower(double p) {
         if(intake.getPower() != p) {
             intake.setPower(p);
         }
@@ -151,7 +150,11 @@ public class Arm implements Subsystem {
         Orienter
      */
 
-    public void setIntakeOrientation(double orientation) {
+    public void setOrienter(double orientation) {
+        orienterPosition = orientation;
+    }
+
+    private void setIntakeOrientation(double orientation) {
         intakeOrienter.setPosition(orientation);
     }
 
@@ -159,19 +162,19 @@ public class Arm implements Subsystem {
         FLAP
      */
 
-    public void setIntakeFlapPosition(double p) {
+    private void setIntakeFlapPosition(double p) {
         intakeFlap.setPosition(p);
     }
 
     public void openFlap() {
-        setIntakeFlapPosition(ArmConstants.Flap.open);
+        flapPosition = ArmConstants.Flap.open;
     }
 
     public void closeFlap() {
-        setIntakeFlapPosition(ArmConstants.Flap.closed);
+        flapPosition = ArmConstants.Flap.closed;
     }
 
-        /*
+    /*
         Freight Detector
      */
 
@@ -194,5 +197,54 @@ public class Arm implements Subsystem {
         if(a > lA && a < uA) count++;
 
         return count == 4;
+    }
+
+    /*
+        Lift
+     */
+
+    public void setLift(double position) {
+        liftPosition = position;
+    }
+
+    /**
+     * Move the arm to the desisted orientation "o"
+     * @param orientation
+     */
+    private void setLiftPosition(double orientation) {
+        double currentPositionInDegrees = ArmConstants.Lift.startPosition + convertTurretLiftTicksToRadians(turretLift.getCurrentPosition());
+
+        // Adjust the value of the lift to keep it up when gravity weighs on it the most
+        double ff = Math.sin(Math.toRadians(orientation)) * ArmConstants.Lift.ffCoef;
+
+        // Maybe switch orientation & currentPos
+        double armPower = ff + ArmConstants.Lift.liftPID.calculate(orientation, currentPositionInDegrees);
+
+        turretLift.setPower(armPower);
+    }
+
+    public double convertTurretLiftTicksToRadians(int ticks) {
+        return (double) ticks / ArmConstants.Lift.ticksPerDegree;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    public void update() throws InterruptedException {
+        // Turret
+        setTurretPosition(turretPosition);
+
+        // Orienter
+        setIntakeOrientation(orienterPosition);
+
+        // Lift
+        setLiftPosition(liftPosition);
+
+        // Intake
+        setIntakePower(intakeSpeed);
+
+        // Flap
+        setIntakeFlapPosition(flapPosition);
+
+        // Freight Detector
     }
 }

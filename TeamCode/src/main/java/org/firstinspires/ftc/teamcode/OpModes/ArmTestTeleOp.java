@@ -16,10 +16,6 @@ import org.firstinspires.ftc.teamcode.math.Pose2D;
 @Config
 @TeleOp(name = "Arm Test", group = "yes")
 public class ArmTestTeleOp extends LinearOpMode {
-
-    public static double or = 90;
-    public static double deg = 90;
-
     @Override
     public void runOpMode() throws InterruptedException {
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -32,10 +28,6 @@ public class ArmTestTeleOp extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-
-
-
-
             actualRobot.update();
 
             telemetry.addData("Has Freight", actualRobot.arm.hasFreight());
