@@ -24,7 +24,7 @@ public class ArmConstants {
 
         public static double halfRotation = outputResolution / 2;
         public static double startPosition = 180;
-        public static double kP = 0.0, kI = 0, kD = 0;
+        public static double kP = 0.0025, kI = 0, kD = 0;
         public static PIDCoefficients turretPIDCoef = new PIDCoefficients(kP, kI, kD);
         public static BasicPID turretPID = new BasicPID(turretPIDCoef);
 
@@ -40,9 +40,13 @@ public class ArmConstants {
 
     @Config
     public static class Orienter {
-        public static double flat = 0.49;
+        public static double flat = 0.18;
+        public static double intake = 0.34;
         public static double deposit = 0.6;
-        public static double up = 0.35;
+        public static double coopDeposit = 0.35;
+        public static double level1Deposit = 0.1;
+        public static double level3Deposit = 0.2;
+        public static double up = 0.1;
         public static double zero = 0.82;
         public static double goofy = 0.2;
         public static double start = flat;
@@ -60,9 +64,8 @@ public class ArmConstants {
         public static double ticksPerDegree = ticksPerRev / 360.0;
 
         // Cos PID stuff
-        public static double kP = 0.0, kI = 0, kD = 0;
-        public static double ffCoef = 0.0;
-        public static PIDCoefficients liftCoef = new PIDCoefficients(kP, kI, kD);
+        public static double ffCoef = 0.15;
+        public static PIDCoefficients liftCoef = new PIDCoefficients(0.2, 0.0, 0.0);
         public static BasicPID liftPID = new BasicPID(liftCoef);
     }
 
@@ -74,8 +77,8 @@ public class ArmConstants {
 
     @Config
     public static class Flap {
-        public static double open = 0;
-        public static double closed = 0.3;
+        public static double open = 0.8;
+        public static double closed = 0.61;
     }
 
     @Config

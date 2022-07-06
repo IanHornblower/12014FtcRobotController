@@ -18,7 +18,7 @@ public class Duck implements Subsystem {
 
     DcMotorEx motor;
 
-    enum MOTOR_STATE {
+    public enum MOTOR_STATE {
         RAMP_UP,
         PLATEAU,
         RAMP_OFF,
@@ -28,12 +28,12 @@ public class Duck implements Subsystem {
 
     MOTOR_STATE state = null;
 
-    public static double rampUpVelo = 300;
-    public static double plateauVelo = 300;
-    public static double rampOffVelo = 300;
+    public static double rampUpVelo = -500;
+    public static double plateauVelo = -600;
+    public static double rampOffVelo = -2000;
 
     public static double rampUpDuration = 0.3;
-    public static double plateauDuration = 1;
+    public static double plateauDuration = 1.2;
     public static double rampOffDuration = 0.3;
 
     boolean reset = false;
@@ -43,6 +43,7 @@ public class Duck implements Subsystem {
     public Duck(HardwareMap hwMap) {
         this.hwMap = hwMap;
         motor = hwMap.get(DcMotorEx.class, "duck");
+        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void resetEncoder() {
@@ -70,6 +71,10 @@ public class Duck implements Subsystem {
         motor.setVelocity(angularVelo, AngleUnit.DEGREES);
     }
 
+    public double getVelocity() {
+        return motor.getVelocity();
+    }
+
     @Override
     public void init() throws InterruptedException {
         state = MOTOR_STATE.IDLE;
@@ -78,6 +83,7 @@ public class Duck implements Subsystem {
 
     @Override
     public void update() throws InterruptedException {
+        /*
         switch (state) {
             case RAMP_UP:
                 setVelocity(rampUpVelo);
@@ -130,5 +136,7 @@ public class Duck implements Subsystem {
             default:
                 state = MOTOR_STATE.IDLE;
         }
+
+         */
     }
 }

@@ -32,6 +32,7 @@ import org.firstinspires.ftc.teamcode.util.Timer;
 import java.util.function.DoubleSupplier;
 
 import static org.firstinspires.ftc.teamcode.hardware.ArmConstants.FreightDetector.*;
+import static org.firstinspires.ftc.teamcode.hardware.subsystems.Duck.rampOffDuration;
 
 // TODO: Add system that sets position with an angle so the Imu can be used to simplify driver control
 
@@ -92,7 +93,7 @@ public class Arm implements Subsystem {
         turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         //turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        intake.setDirection(DcMotorSimple.Direction.FORWARD);
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -103,30 +104,23 @@ public class Arm implements Subsystem {
 
         ArmConstants.Turret.initTurretLUT();
     }
+
     /*
         Turret
      */
 
-    public void setTurret(double position) {
-        turretPosition = position;
-    }
-
-    private double getAdjustedTurretPosition() {
+    public double getAdjustedTurretPosition() {
         return turret.getCurrentPosition() + ArmConstants.Turret.halfRotation;
     }
 
-    private void setTurretPosition(double orientation) {
-        double actualOrientation = ArmConstants.Turret.turretLUT.get(orientation);
-
-        double power = ArmConstants.Turret.turretPID.calculate(actualOrientation, getAdjustedTurretPosition());
+    public void setTurretPosition(double orientation) {
+        double power = ArmConstants.Turret.turretPID.calculate(orientation, turret.getCurrentPosition());
         turret.setPower(power);
     }
 
-    private void simpleSetTurretPosition(double orientation, double speed) {
-        double actualOrientation = ArmConstants.Turret.turretLUT.get(orientation);
-
-        double power = speed * (actualOrientation - getAdjustedTurretPosition())/ Math.abs(actualOrientation - getAdjustedTurretPosition());
-        if(Math.abs(actualOrientation - getAdjustedTurretPosition()) < ArmConstants.Turret.simpleTolerance) {
+    public void simpleSetTurretPosition(double orientation, double speed) {
+        double power = speed * (orientation - getAdjustedTurretPosition())/ Math.abs(orientation - turret.getCurrentPosition());
+        if(Math.abs(orientation - turret.getCurrentPosition()) < ArmConstants.Turret.simpleTolerance) {
             turret.setPower(power);
         }
         turret.setPower(0.0);
@@ -136,11 +130,7 @@ public class Arm implements Subsystem {
         Intake
      */
 
-    public void setIntake(double power) {
-        intakeSpeed = power;
-    }
-
-    private void setIntakePower(double p) {
+    public void setIntakePower(double p) {
         if(intake.getPower() != p) {
             intake.setPower(p);
         }
@@ -150,11 +140,7 @@ public class Arm implements Subsystem {
         Orienter
      */
 
-    public void setOrienter(double orientation) {
-        orienterPosition = orientation;
-    }
-
-    private void setIntakeOrientation(double orientation) {
+    public void setIntakeOrientation(double orientation) {
         intakeOrienter.setPosition(orientation);
     }
 
@@ -162,16 +148,16 @@ public class Arm implements Subsystem {
         FLAP
      */
 
-    private void setIntakeFlapPosition(double p) {
+    public void setIntakeFlapPosition(double p) {
         intakeFlap.setPosition(p);
     }
 
     public void openFlap() {
-        flapPosition = ArmConstants.Flap.open;
+        setIntakeFlapPosition(ArmConstants.Flap.open);
     }
 
     public void closeFlap() {
-        flapPosition = ArmConstants.Flap.closed;
+        setIntakeFlapPosition(ArmConstants.Flap.closed);
     }
 
     /*
@@ -202,16 +188,11 @@ public class Arm implements Subsystem {
     /*
         Lift
      */
-
-    public void setLift(double position) {
-        liftPosition = position;
-    }
-
     /**
      * Move the arm to the desisted orientation "o"
      * @param orientation
      */
-    private void setLiftPosition(double orientation) {
+    public void setLiftPosition(double orientation) {
         double currentPositionInDegrees = ArmConstants.Lift.startPosition + convertTurretLiftTicksToRadians(turretLift.getCurrentPosition());
 
         // Adjust the value of the lift to keep it up when gravity weighs on it the most
@@ -223,6 +204,14 @@ public class Arm implements Subsystem {
         turretLift.setPower(armPower);
     }
 
+    public void setAdjustedPower(double p) {
+        double currentPositionInDegrees = ArmConstants.Lift.startPosition + convertTurretLiftTicksToRadians(turretLift.getCurrentPosition());
+
+        double ff = Math.sin(Math.toRadians(currentPositionInDegrees)) * ArmConstants.Lift.ffCoef;
+
+        turretLift.setPower(ff + p);
+    }
+
     public double convertTurretLiftTicksToRadians(int ticks) {
         return (double) ticks / ArmConstants.Lift.ticksPerDegree;
     }
@@ -230,21 +219,5 @@ public class Arm implements Subsystem {
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void update() throws InterruptedException {
-        // Turret
-        setTurretPosition(turretPosition);
-
-        // Orienter
-        setIntakeOrientation(orienterPosition);
-
-        // Lift
-        setLiftPosition(liftPosition);
-
-        // Intake
-        setIntakePower(intakeSpeed);
-
-        // Flap
-        setIntakeFlapPosition(flapPosition);
-
-        // Freight Detector
     }
 }
